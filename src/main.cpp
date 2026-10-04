@@ -1,4 +1,4 @@
-#include <bluetoothapis.h>/asio.hpp>
+#include <boost/asio.hpp>
 #include <string>
 #include <print>
 
@@ -15,8 +15,8 @@ int main() {
             tcp::socket socket{io_context};
             acceptor.accept(socket);
 
-            cosnt string message = "hi from server";
-            boost::systeM::error_code ignored_error{};
+            const std::string message = "hi from server";
+            boost::system::error_code ignored_error{};
             boost::asio::write(socket, boost::asio::buffer(message), ignored_error);
         }
 
