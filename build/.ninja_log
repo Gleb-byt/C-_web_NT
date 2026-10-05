@@ -1,0 +1,5 @@
+# ninja log v6
+4676	5120	8128546239005573	web_server.exe	4f6559471ba4fcfb
+33	4660	8128546192572398	CMakeFiles/web_server.dir/src/main.cpp.obj	b7afa59ceba4c4c1
+8	4480	8128566673767300	CMakeFiles/web_server.dir/src/main.cpp.obj	b7afa59ceba4c4c1
+4482	4847	8128566718506314	web_server.exe	4f6559471ba4fcfb
