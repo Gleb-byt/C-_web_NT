@@ -1,3 +1,0 @@
-C:/Users/Gleb/Desktop/projects/C++_web_NT/build/CMakeFiles/web_server.dir
-C:/Users/Gleb/Desktop/projects/C++_web_NT/build/CMakeFiles/edit_cache.dir
-C:/Users/Gleb/Desktop/projects/C++_web_NT/build/CMakeFiles/rebuild_cache.dir
