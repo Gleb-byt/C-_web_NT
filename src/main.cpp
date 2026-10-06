@@ -27,10 +27,10 @@ int main() {
                 continue;
             }
 
-            const std::string body = "hi from server\n";
+            const std::string body = "<h1>Привет из C++ сервера!</h1><button>Кнопка</button>";
             std::string response =
                 "HTTP/1.1 200 OK\r\n"
-                "Content-Type: text/plain; charset=utf-8\r\n"
+                "Content-Type: text/html; charset=utf-8\r\n"
                 "Content-Length: " + std::to_string(body.size()) + "\r\n"
                 "Connection: close\r\n"
                 "\r\n" +
