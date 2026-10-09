@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Translation Battle</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="header">
+        <div class="logo-badge">🎮 AI Arena</div>
+        <h1>Translation Battle</h1>
+        <p class="subtitle">
+          Translate the phrase and compare your own variant with the AI
+          translation
+        </p>
+      </header>
+
+      <main class="card main-card">
+        <!-- New round button -->
+        <div class="action-bar">
+          <button id="btn-start" class="btn btn-primary">
+            <span class="icon">🧐</span> Start the round
+          </button>
+          <span id="status-indicator" class="status-indicator status-idle"
+            >Ready for the game</span
+          >
+        </div>
+
+        <!-- Task section -->
+        <section id="task-section" class="task-section hidden">
+          <div class="block-title">Original text (English):</div>
+          <div class="quote-box">
+            <p id="original-text" class="original-text"></p>
+          </div>
+
+          <!-- User input -->
+          <div class="input-group">
+            <label for="user-translation-input" class="block-title"
+              >Your translation (russian):</label
+            >
+            <textarea
+              id="user-translation-input"
+              rows="3"
+              placeholder="Enter your answer here..."
+            ></textarea>
+          </div>
+
+          <button id="btn-submit" class="btn btn-success">
+            <span>🚀 Send to check</span>
+          </button>
+        </section>
+
+        <!-- Results section -->
+        <section id="results-section" class="results-section hidden">
+          <hr class="divider" />
+          <div class="results-header">
+            <h3>Round results</h3>
+            <div id="score-badge" class="score-badge">Evaluation: --</div>
+          </div>
+
+          <div class="comparison-grid">
+            <div class="result-box user-result">
+              <span class="box-label">Your variant:</span>
+              <p id="res-user-text" class="result-text">-</p>
+            </div>
+            <div class="result-box ai-result">
+              <span class="box-label">Correct translation :</span>
+              <p id="res-ai-text" class="result-text">-</p>
+            </div>
+          </div>
+
+          <div class="feedback-card">
+            <span class="box-label"> AI Evaluation model answer:</span>
+            <p id="res-feedback-text" class="feedback-text">-</p>
+          </div>
+        </section>
+      </main>
+
+      <!-- Round history -->
+      <section class="card history-card">
+        <h3>Round history</h3>
+        <div id="history-list" class="history-list">
+          <p class="empty-history">История пока пуста. Начните первый раунд!</p>
+        </div>
+      </section>
+
+      <footer class="footer">Powered by C++ (Boost.Beast) Web Server</footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
