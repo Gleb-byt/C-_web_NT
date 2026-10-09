@@ -5,6 +5,7 @@
 #include <fstream>
 #include <filesystem>
 #include <memory>
+#include <stdexcept>
 
 
 namespace beast = boost::beast;
@@ -20,9 +21,9 @@ std::string read_file(const std::string & filepath);
 std::string_view mime_type(std::string_view path);
 void send_text(tcp::socket & socket, http::status status, 
     std::string_view content_type, std::string body,
-    unsigned version);
+    unsigned version, bool alive);
 
-bool send_file(tcp::socket & socket, const std::string & filepath, unsigned version);
+bool send_file(tcp::socket & socket, const std::string & filepath, unsigned version, bool alive);
 
 void handle_request(tcp::socket & socket, http::request<http::string_body> & req);
 
@@ -34,47 +35,24 @@ int main() {
         std::cout << "Server listening on http://localhost:" << port << "...\n";
         
         for (;;) {
+            
+
             tcp::socket socket{io_context};
             acceptor.accept(socket);
-            
-            
-            
-            
-            beast::flat_buffer buffer;
-            http::request<http::string_body> req;
-            http::read(socket, buffer, req);
-            
-            req.method();
-            req.target();
-            req.body();
-            
-            
-            std::string file_path = "test_client/client.html";
-            
-            // http::response<http::string_body> res{http::status::ok, req.version()};
-            http::response<http::file_body> res{http::status::ok, req.version()};
-            res.set(http::field::server, "Boost.Beast Server");
-            res.set(http::field::content_type, "text/html; charset=utf-8");
-            res.keep_alive(req.keep_alive());
-            // res.body() = read_file(file_path);
-            beast::error_code ec;
-            
-            res.body().open(file_path.c_str(), beast::file_mode::scan, ec);
-            
-            
-            if (ec == beast::errc::no_such_file_or_directory) {
-                http::response<http::string_body> not_found{http::status::not_found, req.version()};
-                not_found.set(http::field::content_type, "text/plain; charset=utf-8");
-                not_found.body() = "file not found";
-                not_found.prepare_payload();
-                http::write(socket, not_found);
-            } else {
-                res.prepare_payload();
-                http::write(socket, res);
+
+            try {
+                beast::flat_buffer buffer;
+                http::request<http::string_body> req;
+                http::read(socket, buffer, req);
+
+                handle_request(socket, req);
+
+                beast::error_code ec;
+
+                socket.shutdown(tcp::socket::shutdown_send, ec);
+            } catch( std::exception & e) {
+                std::cerr << "Request error: " << e.what() << "\n";
             }
-            
-            
-            socket.shutdown(tcp::socket::shutdown_send, ec);
             
         }
         
@@ -115,17 +93,18 @@ std::string_view mime_type(std::string_view path) {
 
 void send_text(tcp::socket & socket, http::status status, 
     std::string_view content_type, std::string body,
-    unsigned version) {
+    unsigned version, bool alive) {
     
     http::response<http::string_body> res{status, version};
     res.set(http::field::server, "Beast-Server");
     res.set(http::field::content_type, content_type);
+    res.keep_alive(alive);
     res.body() = std::move(body);
     res.prepare_payload();
     http::write(socket, res);
 }
 
-bool send_file(tcp::socket & socket, const std::string & filepath, unsigned version) {
+bool send_file(tcp::socket & socket, const std::string & filepath, unsigned version, bool alive) {
     beast::error_code ec;
     
     http::response<http::file_body> res{http::status::ok, version};
@@ -135,6 +114,7 @@ bool send_file(tcp::socket & socket, const std::string & filepath, unsigned vers
     
     res.set(http::field::server, "Beast-Server" );
     res.set(http::field::content_type, mime_type(filepath));
+    res.keep_alive(alive);
     res.prepare_payload();
     http::write(socket, res);
     
@@ -154,10 +134,46 @@ void handle_request(tcp::socket & socket, http::request<http::string_body> & req
     static const std::string static_root = "src/static";
 
     if (method == http::verb::get && target == "/") {
-        if (!send_file(socket, static_root + "/index.html", ver)) {
-            send_text(socket, http::status::not_found, "text/plain", "index.html not found", ver);
+        if (!send_file(socket, static_root + "/index.html", ver, req.keep_alive())) {
+            send_text(socket, http::status::not_found, "text/plain", "index.html not found", ver, req.keep_alive());
         }
         return ;
     }
+
+    //Post method to start the round later here will be the link to normal html page
+    if (method == http::verb::get && target.starts_with("/static/")) {
+        std::string rel(target.substr(8));
+
+        if (rel.find("..") != std::string::npos) {
+            send_text(socket, http::status::bad_request, "text/plain", "Bad request", ver, req.keep_alive());
+            return;
+        }
+        if (!send_file(socket, static_root + "/" + rel, ver, req.keep_alive())) {
+            send_text(socket, http::status::not_found, "text/plain", "File not found " + rel, ver, req.keep_alive());
+        }
+        return;
+    }
+
+
+    //Post method to send the translate on evaluation
+    //Later i will add logic here
+    if (method == http::verb::post && target == "/start") {
+        std::cout << " body : " << req.body() << "\n";
+        send_text(socket, http::status::ok, "application/json", 
+        R"({"original" : "Hello world", "reference" : "Привет мир"})", ver
+        , req.keep_alive());
+        return;
+    }
+
+    if (method == http::verb::post && target == "/evaluate") {
+        std::cout << " body: " << req.body() << "\n";
+        send_text(socket, http::status::ok, "application/json",
+            R"({"score": 0.85, "feedback" : "Nice tranlation"})", ver,
+            req.keep_alive()
+        );
+        return;
+    }
+
+    send_text(socket, http::status::not_found, "text/plain", "Not found", ver, req.keep_alive());
 
 }
