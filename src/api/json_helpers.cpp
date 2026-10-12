@@ -28,4 +28,32 @@ const InputRequest input_parse(http::request<http::string_body> req) {
     }
 }
 
+EvaluateRequest::EvaluateRequest(const std::string & user_translation, 
+    const std::string & reference, const std::string & original, const std::string & neural_translation) :
+        user_translation(user_translation),
+        reference(reference),
+        original(original),
+        neural_translation(neural_translation) {}
 
+const EvaluateRequest evaluate_parse(http::request<http::string_body> req) {
+    std::string raw_body = req.body();
+
+    try {
+
+        json data = json::parse(raw_body);
+
+        std::string user_translation = data["user_translation"].get<std::string>();
+        std::string reference = data["reference"].get<std::string>();
+        std::string original = data["original"].get<std::string>(); 
+        std::string neural_translation = data["neural_translation"].get<std::string>();
+
+        return EvaluateRequest{user_translation, reference, original, neural_translation};
+
+    } catch (json::parse_error & e) {
+        std::cerr << "evaluation algorithm got not valid json : "  << e.what() << '\n';
+        return EvaluateRequest("","", "", "");
+    } catch (json::type_error & e) {
+        std::cerr << "not valid types of json were sent to evaluation algorithm : " << e.what() << '\n';
+        return EvaluateRequest("","", "", "");
+    }
+}
