@@ -7,6 +7,7 @@
 #include <memory>
 #include <stdexcept>
 
+#include "api/json_helpers.hpp"
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -158,22 +159,42 @@ void handle_request(tcp::socket & socket, http::request<http::string_body> & req
     //Post method to send the translate on evaluation
     //Later i will add logic here
     if (method == http::verb::post && target == "/start") {
-        std::cout << " body : " << req.body() << "\n";
-        send_text(socket, http::status::ok, "application/json", 
-        R"({"original" : "Hello world", "reference" : "Привет мир"})", ver
-        , req.keep_alive());
+
+        json res_json = {
+
+            {"original", "Hello world"},
+            {"reference", "Привет мир"}
+        };
+
+        send_text(socket, http::status::ok, 
+            "application/json", res_json.dump(), ver, req.keep_alive()
+        );
+
         return;
     }
 
     if (method == http::verb::post && target == "/evaluate") {
-        std::cout << " body: " << req.body() << "\n";
-        send_text(socket, http::status::ok, "application/json",
-            R"({"score": 0.85, "feedback" : "Nice tranlation"})", ver,
-            req.keep_alive()
-        );
-        return;
+        
+        EvaluateRequest eval_req = evaluate_parse(req);
+
+        if (eval_req.user_translation.empty()) {
+            send_text(socket, http::status::bad_request,
+                "application/json", R"({"error" : "Missing translation"})", ver, req.keep_alive()
+            );
+            return;
+        }
+
+        json res_json;
+
+        res_json["score"] = 0.85;
+        res_json["feedback"] = "Nicet translation!";
+        res_json["received_user_text"] = eval_req.user_translation;
+
+        send_text(socket, http::status::ok, "application/json", res_json.dump(), ver, req.keep_alive());
     }
 
     send_text(socket, http::status::not_found, "text/plain", "Not found", ver, req.keep_alive());
+
+    return;
 
 }

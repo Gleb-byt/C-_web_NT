@@ -21,12 +21,11 @@ struct EvaluateRequest {
     std::string user_translation;
     std::string reference;
     std::string original;
-    std::string neural_translation;
 
     EvaluateRequest(const std::string & user_translation, const std::string & reference, 
-        const std::string & original, const std::string & neural_translation);
+        const std::string & original);
 };
 
 
-const InputRequest input_parse(http::request<http::string_body> req);
-const EvaluateRequest evaluate_parse(http::request<http::string_body> req);
+const InputRequest input_parse(const http::request<http::string_body> & req);
+const EvaluateRequest evaluate_parse(const http::request<http::string_body> & req);
