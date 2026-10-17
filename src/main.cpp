@@ -7,6 +7,7 @@
 #include <memory>
 #include <stdexcept>
 
+#include "api/api_client.hpp"
 #include "api/json_helpers.hpp"
 
 namespace beast = boost::beast;
@@ -17,6 +18,7 @@ static constexpr auto port = 3000u;
 
 using boost::asio::ip::tcp;
 
+static ApiClient api_client("127.0.0.1", "8000");
 
 std::string read_file(const std::string & filepath);
 std::string_view mime_type(std::string_view path);
@@ -160,10 +162,15 @@ void handle_request(tcp::socket & socket, http::request<http::string_body> & req
     //Later i will add logic here
     if (method == http::verb::post && target == "/start") {
 
+
+        std::string original = "The early bird catches the worm";
+        
+        TranslationResult res_tr = api_client.translate(original);
+
         json res_json = {
 
-            {"original", "Hello world"},
-            {"reference", "Привет мир"}
+            {"original", original},
+            {"reference", res_tr.translation_text}
         };
 
         send_text(socket, http::status::ok, 
@@ -177,18 +184,23 @@ void handle_request(tcp::socket & socket, http::request<http::string_body> & req
         
         EvaluateRequest eval_req = evaluate_parse(req);
 
+        
         if (eval_req.user_translation.empty()) {
             send_text(socket, http::status::bad_request,
                 "application/json", R"({"error" : "Missing translation"})", ver, req.keep_alive()
             );
             return;
         }
+        
+        EvaluationResult eval_res = api_client.evaluate(eval_req.user_translation,
+            eval_req.reference
+        );
 
-        json res_json;
+        json res_json = {
+            {"score", eval_res.score},
+            {"feedback", eval_res.feedback}
 
-        res_json["score"] = 0.85;
-        res_json["feedback"] = "Nicet translation!";
-        res_json["received_user_text"] = eval_req.user_translation;
+        };
 
         send_text(socket, http::status::ok, "application/json", res_json.dump(), ver, req.keep_alive());
     }

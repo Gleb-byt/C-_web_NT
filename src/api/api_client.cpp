@@ -61,9 +61,52 @@ std::pair<bool,json> ApiClient::send_post_request(
 
     catch (const std::exception & e) {
         std::cerr << "ApiClient network error: " << e.what() << "\n";
-        return std::make_pair({false, json{{"error", e.what()}}});
+        return std::make_pair(false, json{{"error", e.what()}});
     }
 
     
 
+}
+
+TranslationResult ApiClient::translate(
+    const std::string & text
+) {
+    json payload = {{"text", text}};
+    auto [ok, resp] = send_post_request("/translate", payload);
+
+    if (!ok) {
+        return TranslationResult{false, text, "", 
+            resp.value("error", "Unknown error")};
+    }
+
+    return TranslationResult{
+        true,
+        text,
+        resp.value("tranlsated_text", ""),
+        ""
+    };
+}
+
+EvaluationResult ApiClient::evaluate(const std::string & user_translation,
+    const std::string & reference
+) {
+    json payload = {
+        {"user_translation", user_translation},
+        {"reference", reference}
+    };
+    auto [ok, resp] = send_post_request("/evaluate", payload);
+
+    if (!ok) {
+        return EvaluationResult{
+            false, 0.0, "", resp.value("error", "Unoknown error")
+        };
+    }
+
+
+    return EvaluationResult{
+        true,
+        resp.value("score", 0.0),
+        resp.value("feedback", ""),
+        ""
+    };
 }
