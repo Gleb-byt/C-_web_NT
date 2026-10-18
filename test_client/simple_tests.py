@@ -9,22 +9,38 @@ random.seed(42)
 app = FastAPI()
 
 
-class TranslateReq:
-
-    def __call__(original: str):
-        text_res: str = "".join(
-            random.choice(alph) for _ in range(random.randint(10, 100))
-        )
-
-        return text_res
+def tr(original: str) -> str:  # type: ignore
+    text_res: str = "".join(random.choice(alph) for _ in range(random.randint(10, 100)))
+    return text_res
 
 
-class EvaluateReq:
+def ev(translation: str, original: str):
+    return random.random()
 
-    def __call__(translation: str) -> float:
-        return random.random()
+
+class TranslateReq(BaseModel):
+
+    text: str
+
+
+class EvaluateReq(BaseModel):
+    user_translation: str
+    reference: str
 
 
 @app.post("/translate")
 def translate(req: TranslateReq):
-    print("Request on translation of ")
+    print(f"Request on translation of sentense: {req.text}")
+
+    return {"translated_text": tr(req.text)}
+
+
+@app.post("/evaluate")
+def evaluate(req: EvaluateReq):
+    print(f"Evaluate: user='{req.user_translation}', ref='{req.reference}'")
+    return {
+        "score": ev(req.user_translation, req.reference),
+        "feedback": "NT bro",
+        "error": "",
+        "success": True,
+    }

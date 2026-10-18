@@ -6,7 +6,7 @@ InputRequest::InputRequest(const std::string & user_text, const std::string & re
     reference(reference)
   {}
 
-const InputRequest input_parse(http::request<http::string_body> req) {
+const InputRequest input_parse(const http::request<http::string_body> & req) {
     std::string raw_body = req.body();
 
     try {
@@ -34,7 +34,7 @@ EvaluateRequest::EvaluateRequest(const std::string & user_translation,
         reference(reference),
         original(original) {}
 
-const EvaluateRequest evaluate_parse(http::request<http::string_body> req) {
+const EvaluateRequest evaluate_parse(const http::request<http::string_body> & req) {
     std::string raw_body = req.body();
 
     try {

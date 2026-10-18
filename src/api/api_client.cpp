@@ -28,7 +28,7 @@ std::pair<bool,json> ApiClient::send_post_request(
     
         std::string body_str = json_body.dump();
     
-        http::request<http::string_body> req{http::verb::get, target, 11};
+        http::request<http::string_body> req{http::verb::post, target, 11};
         req.set(http::field::host, host_);
         req.set(http::field::user_agent, "Cpp-Translation-Game/1.0");
         req.set(http::field::content_type, "application/json");
@@ -39,7 +39,7 @@ std::pair<bool,json> ApiClient::send_post_request(
     
         beast::flat_buffer buffer;
     
-        http::response<http::dynamic_body> res;
+        http::response<http::string_body> res;
     
         http::read(stream, buffer, res);
 
@@ -82,7 +82,7 @@ TranslationResult ApiClient::translate(
     return TranslationResult{
         true,
         text,
-        resp.value("tranlsated_text", ""),
+        resp.value("translated_text", ""),
         ""
     };
 }
