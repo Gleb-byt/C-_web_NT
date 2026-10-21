@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 #include <random>
+#include <string>
+
 
 constexpr int OBJ_AM = 100;
 
