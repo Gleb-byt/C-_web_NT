@@ -60,26 +60,44 @@ struct TextItem {
     int id{0};
     std::string text;
     std::string translate;
-    std::string difficulty;
 
 };
 
 
+
 class TextBank {
-public:
-
+    public:
+    
     explicit TextBank(const std::string & filepath);
-
-    std::string get_random_text();
-
-
+    
+    TextItem get_random_text();
+    
+    
     size_t size() const { return items_.size(); }
-
+    
     bool empty() const { return items_.empty(); }
-
-private:
+    
+    private:
     std::vector<TextItem> items_;
-
+    
     std::mt19937 rng_;
+    
+};
 
+
+struct TextBankSet {
+    TextBank easy{"./data/texts_easy.json"};
+    TextBank middle{"./data/texts_middle.json"};
+    TextBank hard{"./data/texts_hard.json"};
+
+    TextBank& get(const std::string & diff) {
+        if (diff == "easy") {
+            return easy;
+        } else if (diff == "middle") {
+            return middle;
+        } else {
+            return hard;
+        }
+        throw std::invalid_argument("Unknown difficulty: " + diff);
+    }
 };
